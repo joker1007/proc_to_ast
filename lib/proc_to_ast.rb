@@ -16,7 +16,7 @@ module ProcToAst
           end
         }.compact
       else
-        node
+        [node]
       end
     end
 

@@ -9,7 +9,6 @@ describe Proc do
     end
 
     it "converts proc variation" do
-
       hoge = proc { p 1 }
 
       _ = [1].map {|i| i * 2}; fuga = ->(a) {
@@ -20,15 +19,24 @@ describe Proc do
         puts b
       end
 
+      def receive_block(&block)
+        block.to_ast
+      end
+
+      block_pass = receive_block do |n|
+        puts n
+      end
+
       expect(hoge.to_ast).to be_a(AST::Node)
-      expect(fuga.to_ast).to be_a(AST::Node)
+      expect{ fuga.to_ast }.to raise_error(ProcToAst::MultiMatchError)
       expect(foo.to_ast).to be_a(AST::Node)
+      expect(block_pass).to be_a(AST::Node)
     end
   end
 
   describe "#to_source" do
     it "return source code string" do
-      _ = [1].map {|i| i * 2}; fuga = ->(a) {
+      fuga = ->(a) {
         p a
       }
 

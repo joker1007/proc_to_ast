@@ -5,6 +5,8 @@ require 'unparser'
 require 'coderay'
 
 module ProcToAst
+  class MultiMatchError < StandardError; end
+
   class Traverser
     def traverse_node(node)
       if node.type != :block
@@ -14,9 +16,7 @@ module ProcToAst
           end
         }.compact
       else
-        if proc_block?(node)
-          node
-        end
+        node
       end
     end
 
@@ -62,7 +62,12 @@ class Proc
       source_buffer = Parser::Source::Buffer.new(filename, linenum)
       source_buffer.source = source
       node = parser.parse(source_buffer)
-      ProcToAst::Traverser.new.traverse_node(node).first
+      block_nodes = ProcToAst::Traverser.new.traverse_node(node)
+      if block_nodes.length == 1
+        block_nodes.first
+      else
+        raise ProcToAst::MultiMatchError
+      end
     rescue Parser::SyntaxError
       retry if try_count < retry_limit
     end

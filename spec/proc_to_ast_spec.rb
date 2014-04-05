@@ -8,29 +8,46 @@ describe Proc do
       expect(ast.type).to eq(:block)
     end
 
-    it "converts proc variation" do
-      hoge = proc { p 1 }
+    context "proc variation" do
+      it "converts Kernel#proc" do
+        pr = proc { p 1 }
 
-      _ = [1].map {|i| i * 2}; fuga = ->(a) {
-        p a
-      }
-
-      foo = Proc.new do |b|
-        puts b
+        expect(pr.to_ast).to be_a(AST::Node)
       end
 
-      def receive_block(&block)
-        block.to_ast
+      it "converts Proc.new" do
+        pr = Proc.new do |b|
+          puts b
+        end
+
+        expect(pr.to_ast).to be_a(AST::Node)
       end
 
-      block_pass = receive_block do |n|
-        puts n
+      it "converts block passing method" do
+        def receive_block(&block)
+          block.to_ast
+        end
+
+        block_pass = receive_block do |n|
+          puts n
+          [1, 2, 3].map do |i|
+            i * 2
+          end
+        end
+
+        block_pass2 = receive_block { %w(a b c).map(&:upcase) }
+
+        expect(block_pass).to be_a(AST::Node)
+        expect(block_pass2).to be_a(AST::Node)
       end
 
-      expect(hoge.to_ast).to be_a(AST::Node)
-      expect{ fuga.to_ast }.to raise_error(ProcToAst::MultiMatchError)
-      expect(foo.to_ast).to be_a(AST::Node)
-      expect(block_pass).to be_a(AST::Node)
+      it "raise ProcToAst::MultiMatchError, when other block exists on same line " do
+        _ = [1].map {|i| i * 2}; fuga = ->(a) {
+          p a
+        }
+
+        expect{ fuga.to_ast }.to raise_error(ProcToAst::MultiMatchError)
+      end
     end
   end
 

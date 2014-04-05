@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["kakyoin.hierophant@gmail.com"]
   spec.summary       = %q{Convert Proc object to AST::Node}
   spec.description   = %q{Add #to_ast method to Proc. #to_ast converts Proc object to AST::Node.}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/joker1007/proc_to_ast"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")

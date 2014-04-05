@@ -48,6 +48,50 @@ describe Proc do
 
         expect{ fuga.to_ast }.to raise_error(ProcToAst::MultiMatchError)
       end
+
+      it "inner array" do
+        array = [
+          1,
+          -> { 2 },
+          [
+            -> {
+              3
+            },
+          ],
+          proc do |a|
+            [
+              a,
+            ]
+          end
+        ]
+        expect(array[1].to_ast).to be_a(AST::Node)
+        expect(array[1].to_source).to eq("lambda do\n  2\nend")
+        expect(array[2][0].to_source).to eq("lambda do\n  3\nend")
+        expect(array[3].to_source).to eq("proc do |a|\n  [a]\nend")
+      end
+
+      it "inner hash" do
+        hash_oneline = {a: -> { 1 }}
+        expect(hash_oneline[:a].to_ast).to be_a(AST::Node)
+        expect(hash_oneline[:a].to_source).to eq("lambda do\n  1\nend")
+
+        hash = {
+          a: -> { 1 },
+          :b => -> { 2 },
+          c: -> {
+            3
+          },
+          d: -> { 4 }
+        }
+        expect(hash[:a].to_ast).to be_a(AST::Node)
+        expect(hash[:a].to_source).to eq("lambda do\n  1\nend")
+        expect(hash[:b].to_ast).to be_a(AST::Node)
+        expect(hash[:b].to_source).to eq("lambda do\n  2\nend")
+        expect(hash[:c].to_ast).to be_a(AST::Node)
+        expect(hash[:c].to_source).to eq("lambda do\n  3\nend")
+        expect(hash[:d].to_ast).to be_a(AST::Node)
+        expect(hash[:d].to_source).to eq("lambda do\n  4\nend")
+      end
     end
   end
 

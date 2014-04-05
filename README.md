@@ -1,6 +1,8 @@
-# ProcToAst
+# proc_to_ast
 
-TODO: Write a gem description
+Add `#to_ast` method to Proc.
+
+`#to_ast` convert Proc to `Parser::AST::Node`, using [parser](https://github.com/whitequark/parser "whitequark/parser") gem.
 
 ## Installation
 
@@ -18,7 +20,27 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+require 'proc_to_ast'
+
+foo = proc { p(1 + 1) }
+
+foo.to_ast
+# =>
+# (block
+#   (send nil :proc)
+#   (args)
+#   (send nil :p
+#     (send
+#       (int 1) :+
+#       (int 1))))
+
+foo.to_source
+# => "proc do\n  p(1 + 1)\nend"
+
+foo.to_source(highlight: true)
+# => "proc \e[32mdo\e[0m\n  p(\e[1;34m1\e[0m + \e[1;34m1\e[0m)\n\e[32mend\e[0m"
+```
 
 ## Contributing
 

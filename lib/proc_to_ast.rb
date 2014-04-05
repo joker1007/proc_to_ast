@@ -34,7 +34,7 @@ module ProcToAst
         try_count += 1
 
         buf << file.gets
-        do_parse(buf)
+        do_parse(buf.join)
       rescue ::Parser::SyntaxError => e
         node = trim_and_retry(buf)
 
@@ -49,9 +49,8 @@ module ProcToAst
 
     private
 
-    def do_parse(buf)
+    def do_parse(source)
       parser.reset
-      source = buf.join.force_encoding(parser.default_encoding)
 
       source_buffer = ::Parser::Source::Buffer.new(@filename, @linenum)
       source_buffer.source = source
@@ -65,22 +64,15 @@ module ProcToAst
       end
     end
 
-    # Remove tail comma or Hash syntax, and retry parsing
+    # Remove tail comma and wrap dummy method, and retry parsing
+    # For proc inner Array or Hash
     def trim_and_retry(buf)
       *lines, last = buf
 
       # For inner Array or Hash or Arguments list.
-      lines << last.gsub(/,\s*/, "")
-
-      lines[0] = lines[0]
-        .gsub(/[0-9a-zA-Z_]+:\s*/, "")
-        .gsub(/[^\s]+\s*=>\s*/, "")
-
-      begin
-        do_parse(lines)
-      rescue ::Parser::SyntaxError
-        nil
-      end
+      lines << last.gsub(/,\s*$/, "")
+      do_parse("a(#{lines.join})") # wrap dummy method
+    rescue ::Parser::SyntaxError
     end
 
     def traverse_node(node)

@@ -70,11 +70,22 @@ describe Proc do
         expect(array[3].to_source).to eq("proc do |a|\n  [a]\nend")
       end
 
+      it "inner two dimension array" do
+        array = [
+          [1, 2, -> { 3 }],
+          [4, 5, -> { 6 }]
+        ]
+        expect(array[0][2].to_ast).to be_a(AST::Node)
+        expect(array[1][2].to_ast).to be_a(AST::Node)
+      end
+
       it "inner hash" do
         hash_oneline = {a: -> { 1 }}
         expect(hash_oneline[:a].to_ast).to be_a(AST::Node)
         expect(hash_oneline[:a].to_source).to eq("lambda do\n  1\nend")
+      end
 
+      it "inner multiline hash" do
         hash = {
           a: -> { 1 },
           :b => -> { 2 },
@@ -91,6 +102,15 @@ describe Proc do
         expect(hash[:c].to_source).to eq("lambda do\n  3\nend")
         expect(hash[:d].to_ast).to be_a(AST::Node)
         expect(hash[:d].to_source).to eq("lambda do\n  4\nend")
+      end
+
+      it "inner another hash" do
+        hash = {
+          a: 1, :b => -> { 2 },
+        }
+
+        expect(hash[:b].to_ast).to be_a(AST::Node)
+        expect(hash[:b].to_source).to eq("lambda do\n  2\nend")
       end
     end
   end

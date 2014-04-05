@@ -125,4 +125,12 @@ describe Proc do
       expect(fuga.to_source(highlight: true)).to eq("lambda \e[32mdo\e[0m |a|\n  p(a)\n\e[32mend\e[0m")
     end
   end
+
+  describe "#to_raw_source" do
+    it "return original source code" do
+      pr = ->(a) { a + 1 }
+
+      expect(pr.to_raw_source).to eq("->(a) { a + 1 }")
+    end
+  end
 end

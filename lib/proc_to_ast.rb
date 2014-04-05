@@ -109,4 +109,14 @@ class Proc
       source
     end
   end
+
+  def to_raw_source(highlight: false, retry_limit: 20)
+    source = to_ast(retry_limit).loc.expression.source
+
+    if highlight
+      CodeRay.scan(source, :ruby).terminal
+    else
+      source
+    end
+  end
 end

@@ -1,4 +1,6 @@
 # proc_to_ast
+[![Gem Version](https://badge.fury.io/rb/proc_to_ast.svg)](http://badge.fury.io/rb/proc_to_ast)
+[![Build Status](https://travis-ci.org/joker1007/proc_to_ast.svg?branch=master)](https://travis-ci.org/joker1007/proc_to_ast)
 
 Add `#to_ast` method to Proc.
 

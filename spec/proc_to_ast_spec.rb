@@ -23,6 +23,32 @@ describe Proc do
         expect(pr.to_ast).to be_a(AST::Node)
       end
 
+      it "long proc" do
+        pr = Proc.new do |b|
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+          p 1
+        end
+
+        expect(pr.to_ast).to be_a(AST::Node)
+      end
+
       it "converts block passing method" do
         def receive_block(&block)
           block.to_ast

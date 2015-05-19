@@ -20,31 +20,21 @@ module ProcToAst
     #
     # @param filename [String] reading file path
     # @param linenum [Integer] start line number
-    # @param retry_limit [Integer]
     # @return [Parser::AST::Node] Proc AST
-    def parse(filename, linenum, retry_limit = 20)
+    def parse(filename, linenum)
       @filename, @linenum = filename, linenum
-      file = File.open(filename, "rb")
-
-      (linenum - 1).times { file.gets }
       buf = []
-      try_count = 0
-
-      begin
-        try_count += 1
-
-        buf << file.gets
-        do_parse(buf.join)
-      rescue ::Parser::SyntaxError => e
-        node = trim_and_retry(buf)
-
-        return node unless node.nil?
-        retry if try_count < retry_limit
-
-        raise e
-      ensure
-        file.close
+      File.open(filename, "rb").each_with_index do |line, index|
+        next if index < linenum - 1
+        buf << line
+        begin
+          return do_parse(buf.join)
+        rescue ::Parser::SyntaxError
+          node = trim_and_retry(buf)
+          return node if node
+        end
       end
+      fail(::Parser::SyntaxError, 'Unknown error')
     end
 
     private
@@ -90,19 +80,17 @@ module ProcToAst
 end
 
 class Proc
-  # @param retry_limit [Integer]
   # @return [Parser::AST::Node] Proc AST
-  def to_ast(retry_limit = 20)
+  def to_ast
     filename, linenum = source_location
     parser = ProcToAst::Parser.new
-    parser.parse(filename, linenum, retry_limit)
+    parser.parse(filename, linenum)
   end
 
   # @param highlight [Boolean] enable output highlight
-  # @param retry_limit [Integer]
   # @return [String] proc source code
-  def to_source(highlight: false, retry_limit: 20)
-    source = Unparser.unparse(to_ast(retry_limit))
+  def to_source(highlight: false)
+    source = Unparser.unparse(to_ast)
     if highlight
       CodeRay.scan(source, :ruby).terminal
     else
@@ -110,8 +98,8 @@ class Proc
     end
   end
 
-  def to_raw_source(highlight: false, retry_limit: 20)
-    source = to_ast(retry_limit).loc.expression.source
+  def to_raw_source(highlight: false)
+    source = to_ast.loc.expression.source
 
     if highlight
       CodeRay.scan(source, :ruby).terminal
